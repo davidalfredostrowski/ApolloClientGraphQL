@@ -1,0 +1,269 @@
+Apollo client instructions
+The server side is from the graphQL tutorial in 40 minutes
+
+the pedrotech tutorial is what i used for the client
+
+
+
+
+
+1.) verify that you have the graphql server
+2.) update the 'cors' module    :     npm i cors
+3.) make the necessary adjustments to the server.js
+
+const cors = require('cors')
+
+
+app.use(cors())
+
+
+ 1325  ls
+ 1326  cd graphql-sample-server/
+ 1327  ls
+ 1328  node server.js
+ 1329  vi server.js
+ 1330  node server.js
+ 1331  npm i cors
+ 1332  node server.js
+ 1333  history
+
+
+
+
+ubuntu@ip-172-31-33-160:~/graphql-sample-server$ cat server.js
+const cors = require('cors')
+const express = require('express')
+const graphqlHTTP   = require('express-graphql').graphqlHTTP;
+const {
+        GraphQLSchema,
+        GraphQLObjectType,
+        GraphQLString,
+        GraphQLList,
+        GraphQLInt,
+        GraphQLNonNull
+} = require('graphql')
+
+const app = express()
+app.use(cors())
+
+const authors = [
+        { id: 1, name: 'J. K. Rowling' },
+        { id: 2, name: 'J. R. R. Tolkien' },
+        { id: 3, name: 'Brent Weeks' }
+]
+
+const books = [
+        { id: 1, name: 'Harry Potter and the Chamber of Secrets', authorId: 1 },
+        { id: 2, name: 'Harry Potter and the Prisoner of Azkaban', authorId: 1 },
+        { id: 3, name: 'Harry Potter and the Goblet of Fire', authorId: 1 },
+        { id: 4, name: 'The Fellowship of the Ring', authorId: 2 },
+        { id: 5, name: 'The Two Towers', authorId: 2 },
+        { id: 6, name: 'The Return of the King', authorId: 2 },
+        { id: 7, name: 'The Way of Shadows', authorId: 3 },
+        { id: 8, name: 'Beyond the Shadows', authorId: 3 }
+]
+
+const BookType = new GraphQLObjectType({
+        name: 'Book',
+        description: 'This represents a books written by an author',
+        fields: () => ({
+                id: { type: GraphQLInt },
+                name: { type: GraphQLString},
+                authorId: { type: GraphQLInt }
+
+                })
+})
+
+const RootQueryType = new GraphQLObjectType({
+        name: 'Query',
+        description: 'Root Query',
+        fields: () => ({
+                books: {
+                        type: new GraphQLList(BookType),
+                        description: 'List of All Books',
+                        resolve: () => books
+                }
+        })
+})
+
+
+const schema  = new GraphQLSchema({
+        query: RootQueryType,
+})
+
+
+//const schema = new GraphQLSchema({
+//      query: new GraphQLObjectType({
+//              name: 'HelloWorld',
+//              fields: () => ({
+//                      message: {
+//                                      type: GraphQLString,
+//                                      resolve: () => 'Hello World'
+//                      }
+//              })
+//      })
+//})
+
+app.use('/graphql', graphqlHTTP({
+        schema: schema,
+        graphiql: true
+}));
+
+
+
+
+app.listen(4000., () => console.log('Server Running'))
+
+
+
+
+
+
+
+
+5.) replace hellow world with the necessary App.js code
+
+
+
+ubuntu@ip-172-31-33-160:~/daveBook/src/client$ cat App.js
+//import React from 'react';
+//import GetUsers from './GetUsers';
+//import "./App.css";
+import {
+        ApolloClient,
+        InMemoryCache,
+        ApolloProvider,
+        HttpLink,
+        from
+} from "@apollo/client";
+
+
+import { onError } from '@apollo/client/link/error'
+
+
+
+import React, { useEffect } from 'react'
+import { useQuery,  gql} from '@apollo/client';
+//import { LOAD_USERS } from '../GraphQL/Queries'
+
+function GetUsers() {
+
+const { error, loading, data } = useQuery(LOAD_USERS)
+
+
+useEffect(() => {
+                console.log(data);
+        },[data])
+        return  <div></div>
+}
+
+//export default GetUsers
+
+//import {gql} from '@apollo/client'
+
+export const LOAD_USERS = gql`
+        query {
+                books {
+                        id
+                        name
+                }
+        }
+`
+const errorLink = onError(({ graphqlErrors, networkError }) => {
+        if (graphqlErrors) {
+                graphqlErrors.map(({ message, location, path })=> {
+                        alert(`Graphql error ${message}`);
+                });
+        }
+});
+
+const link = from([
+        errorLink,
+        new HttpLink({ uri: "http://ec2-34-217-2-202.us-west-2.compute.amazonaws.com:4000/graphql" }),
+])
+const client = new ApolloClient({
+        cache: new InMemoryCache(),
+        link: link
+});
+
+function App(){
+        return (
+
+                <ApolloProvider client={client}>
+                {" "}
+                <GetUsers />
+                </ApolloProvider>
+        );
+}
+
+export default App;
+
+
+//import React from 'react';
+
+//const App = () => {
+//      return (
+//              <div>hi</div>
+//      );
+//}
+//
+//export default App
+
+
+
+
+
+
+5 a.) remember when re-initing server to change the .env
+  b.) change the url in the graphql server
+  c.) change the url in the graphql client
+  d.) change webpack.
+
+
+
+
+
+
+
+6.) EVentually i want to refactor out the files GetUser  and Queries which i wasn't able to recognize each other...
+
+GetUsers.js
+// src/components
+
+import React, { useEffect } from 'react'
+import { userQuery,  gql} from '@apollo/client';
+import { LOAD_USERS } from '../GraphQL/Queries'
+
+function GetUsers() {
+	
+const { error, loading, data } = useQuery(LOAD_USERS)
+
+
+useEffect(() => {
+		console.log(data);
+	},[data])
+	return	<div></div>
+}
+
+export default GetUsers
+
+
+
+Queries.js
+
+
+//  client/src/graphQL/queries.js
+
+import {gql} from '@apollo/client'
+
+export cost LOAD_USERS = gql`
+	query {
+		books { 
+			id
+			name
+		}
+	}
+`
+
+
+

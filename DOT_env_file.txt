@@ -1,0 +1,4 @@
+ubuntu@ip-172-31-33-160:~/daveBook$ cat .env
+REACT_APP_API_HOST=ec2-34-217-2-202.us-west-2.compute.amazonaws.com
+HOST=ec2-34-217-2-202.us-west-2.compute.amazonaws.com
+DANGEROUSLY_DISABLE_HOST_CHECK=true

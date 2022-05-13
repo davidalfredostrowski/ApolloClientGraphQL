@@ -1,0 +1,6 @@
+ cat .babelrc
+{
+    "presets": ["@babel/env","@babel/react"]
+}
+
+ubuntu@ip-172-31-33-160:~/daveBook$
